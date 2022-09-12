@@ -21,7 +21,6 @@
  */
 package com.owncloud.android.ui.asynctasks;
 
-import android.accounts.Account;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
@@ -31,6 +30,7 @@ import android.provider.DocumentsContract;
 import android.widget.Toast;
 
 import com.nextcloud.client.account.User;
+import com.nextcloud.client.jobs.BackgroundJobManager;
 import com.owncloud.android.R;
 import com.owncloud.android.files.services.FileUploader;
 import com.owncloud.android.files.services.NameCollisionPolicy;
@@ -60,11 +60,12 @@ public class CopyAndUploadContentUrisTask extends AsyncTask<Object, Void, Result
     private WeakReference<OnCopyTmpFilesTaskListener> mListener;
 
     /**
-     * Reference to application context, used to access app resources. Holding it should not be a problem,
-     * since it needs to exist until the end of the AsyncTask although the caller Activity were finished
-     * before.
+     * Reference to application context, used to access app resources. Holding it should not be a problem, since it
+     * needs to exist until the end of the AsyncTask although the caller Activity were finished before.
      */
     private final Context mAppContext;
+
+    private final BackgroundJobManager backgroundJobManager;
 
     /**
      * Helper method building a correct array of parameters to be passed to {@link #execute(Object[])} )}
@@ -100,7 +101,7 @@ public class CopyAndUploadContentUrisTask extends AsyncTask<Object, Void, Result
         String[] remotePaths,
         int behaviour,
         ContentResolver contentResolver
-    ) {
+                                              ) {
 
         return new Object[] {
             user,
@@ -113,10 +114,12 @@ public class CopyAndUploadContentUrisTask extends AsyncTask<Object, Void, Result
 
     public CopyAndUploadContentUrisTask(
         OnCopyTmpFilesTaskListener listener,
-        Context context
-    ) {
+        Context context,
+        BackgroundJobManager backgroundJobManager
+                                       ) {
         mListener = new WeakReference<>(listener);
         mAppContext = context.getApplicationContext();
+        this.backgroundJobManager = backgroundJobManager;
     }
 
     /**
@@ -251,18 +254,19 @@ public class CopyAndUploadContentUrisTask extends AsyncTask<Object, Void, Result
 
     private void requestUpload(User user, String localPath, String remotePath, int behaviour, String mimeType) {
         FileUploader.uploadNewFile(
-                mAppContext,
-                user,
-                localPath,
-                remotePath,
-                behaviour,
-                mimeType,
-                false,      // do not create parent folder if not existent
-                UploadFileOperation.CREATED_BY_USER,
-                false,
-                false,
-                NameCollisionPolicy.ASK_USER
-        );
+            mAppContext,
+            user,
+            localPath,
+            remotePath,
+            behaviour,
+            mimeType,
+            false,      // do not create parent folder if not existent
+            UploadFileOperation.CREATED_BY_USER,
+            false,
+            false,
+            NameCollisionPolicy.ASK_USER,
+            backgroundJobManager
+                                  );
     }
 
     @Override

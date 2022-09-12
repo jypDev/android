@@ -935,4 +935,8 @@ public abstract class FileActivity extends DrawerActivity
         }
         return null;
     }
+
+    public BackgroundJobManager getBackgroundJobManager() {
+        return backgroundJobManager;
+    }
 }

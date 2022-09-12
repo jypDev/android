@@ -120,7 +120,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AlertDialog.Builder;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.view.MenuItemCompat;
-import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -901,18 +900,19 @@ public class ReceiveExternalFilesActivity extends FileActivity
 
     public void uploadFile(String tmpName, String filename) {
         FileUploader.uploadNewFile(
-                getBaseContext(),
-                getUser().orElseThrow(RuntimeException::new),
-                tmpName,
-                mFile.getRemotePath() + filename,
-                FileUploader.LOCAL_BEHAVIOUR_COPY,
-                null,
-                true,
-                UploadFileOperation.CREATED_BY_USER,
-                false,
-                false,
-                NameCollisionPolicy.ASK_USER
-        );
+            getBaseContext(),
+            getUser().orElseThrow(RuntimeException::new),
+            tmpName,
+            mFile.getRemotePath() + filename,
+            FileUploader.LOCAL_BEHAVIOUR_COPY,
+            null,
+            true,
+            UploadFileOperation.CREATED_BY_USER,
+            false,
+            false,
+            NameCollisionPolicy.ASK_USER,
+            backgroundJobManager
+                                  );
         finish();
     }
 
@@ -925,7 +925,8 @@ public class ReceiveExternalFilesActivity extends FileActivity
             getUser().orElseThrow(RuntimeException::new),
             FileUploader.LOCAL_BEHAVIOUR_DELETE,
             true, // Show waiting dialog while file is being copied from private storage
-            this  // Copy temp task listener
+            this,  // Copy temp task listener
+            backgroundJobManager
         );
 
         UriUploader.UriUploaderResultCode resultCode = uploader.uploadUris();

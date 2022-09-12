@@ -101,6 +101,7 @@ class BackgroundJobFactory @Inject constructor(
                 CalendarBackupWork::class -> createCalendarBackupWork(context, workerParameters)
                 CalendarImportWork::class -> createCalendarImportWork(context, workerParameters)
                 FilesExportWork::class -> createFilesExportWork(context, workerParameters)
+                FilesUploadWorker::class -> createFilesUploadWorker(context, workerParameters)
                 else -> null // caller falls back to default factory
             }
         }
@@ -189,7 +190,8 @@ class BackgroundJobFactory @Inject constructor(
             uploadsStorageManager = uploadsStorageManager,
             connectivityService = connectivityService,
             powerManagementService = powerManagementService,
-            clock = clock
+            clock = clock,
+            backgroundJobManager = backgroundJobManager.get()
         )
     }
 
@@ -200,7 +202,8 @@ class BackgroundJobFactory @Inject constructor(
             contentResolver = contentResolver,
             userAccountManager = accountManager,
             connectivityService = connectivityService,
-            powerManagementService = powerManagementService
+            powerManagementService = powerManagementService,
+            backgroundJobManager = backgroundJobManager.get()
         )
     }
 
@@ -241,5 +244,9 @@ class BackgroundJobFactory @Inject constructor(
             eventBus,
             preferences
         )
+    }
+
+    private fun createFilesUploadWorker(context: Context, params: WorkerParameters): FilesUploadWorker {
+        return FilesUploadWorker(context, params)
     }
 }

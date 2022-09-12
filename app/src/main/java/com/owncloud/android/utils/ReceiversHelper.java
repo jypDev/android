@@ -29,6 +29,7 @@ import android.content.IntentFilter;
 
 import com.nextcloud.client.account.UserAccountManager;
 import com.nextcloud.client.device.PowerManagementService;
+import com.nextcloud.client.jobs.BackgroundJobManager;
 import com.nextcloud.client.network.ConnectivityService;
 import com.nextcloud.common.DNSCache;
 import com.owncloud.android.MainApp;
@@ -46,7 +47,8 @@ public final class ReceiversHelper {
     public static void registerNetworkChangeReceiver(final UploadsStorageManager uploadsStorageManager,
                                                      final UserAccountManager accountManager,
                                                      final ConnectivityService connectivityService,
-                                                     final PowerManagementService powerManagementService) {
+                                                     final PowerManagementService powerManagementService,
+                                                     final BackgroundJobManager backgroundJobManager) {
         Context context = MainApp.getAppContext();
 
         IntentFilter intentFilter = new IntentFilter();
@@ -61,7 +63,8 @@ public final class ReceiversHelper {
                     FilesSyncHelper.restartJobsIfNeeded(uploadsStorageManager,
                                                         accountManager,
                                                         connectivityService,
-                                                        powerManagementService);
+                                                        powerManagementService,
+                                                        backgroundJobManager);
                 }
             }
         };
@@ -73,8 +76,9 @@ public final class ReceiversHelper {
         final UploadsStorageManager uploadsStorageManager,
         final UserAccountManager accountManager,
         final ConnectivityService connectivityService,
-        final PowerManagementService powerManagementService
-    ) {
+        final PowerManagementService powerManagementService,
+        final BackgroundJobManager backgroundJobManager
+                                                  ) {
         Context context = MainApp.getAppContext();
 
         IntentFilter intentFilter = new IntentFilter();
@@ -88,7 +92,8 @@ public final class ReceiversHelper {
                     FilesSyncHelper.restartJobsIfNeeded(uploadsStorageManager,
                                                         accountManager,
                                                         connectivityService,
-                                                        powerManagementService);
+                                                        powerManagementService,
+                                                        backgroundJobManager);
                 }
             }
         };
@@ -100,8 +105,9 @@ public final class ReceiversHelper {
         final UploadsStorageManager uploadsStorageManager,
         final UserAccountManager accountManager,
         final ConnectivityService connectivityService,
-        final PowerManagementService powerManagementService
-        ) {
+        final PowerManagementService powerManagementService,
+        final BackgroundJobManager backgroundJobManager
+                                                ) {
         Context context = MainApp.getAppContext();
 
         IntentFilter intentFilter = new IntentFilter();
@@ -114,7 +120,8 @@ public final class ReceiversHelper {
                     FilesSyncHelper.restartJobsIfNeeded(uploadsStorageManager,
                                                         accountManager,
                                                         connectivityService,
-                                                        powerManagementService);
+                                                        powerManagementService,
+                                                        backgroundJobManager);
                 }
             }
         };

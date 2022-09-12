@@ -52,6 +52,7 @@ import com.nextcloud.client.account.User;
 import com.nextcloud.client.account.UserAccountManager;
 import com.nextcloud.client.device.BatteryStatus;
 import com.nextcloud.client.device.PowerManagementService;
+import com.nextcloud.client.jobs.BackgroundJobManager;
 import com.nextcloud.client.network.Connectivity;
 import com.nextcloud.client.network.ConnectivityService;
 import com.nextcloud.java.util.Optional;
@@ -326,7 +327,13 @@ public class FileUploader extends Service
         boolean onWifiOnly = intent.getBooleanExtra(KEY_WHILE_ON_WIFI_ONLY, false);
         boolean whileChargingOnly = intent.getBooleanExtra(KEY_WHILE_CHARGING_ONLY, false);
 
-        if (!retry) { // Start new uploads
+        if (retry) { // Retry uploads
+            if (!intent.hasExtra(KEY_ACCOUNT) || !intent.hasExtra(KEY_RETRY_UPLOAD)) {
+                Log_OC.e(TAG, "Not enough information provided in intent: no KEY_RETRY_UPLOAD_KEY");
+                return START_NOT_STICKY;
+            }
+            retryUploads(intent, user, requestedUploads);
+        } else { // Start new uploads
             if (!(intent.hasExtra(KEY_LOCAL_FILE) || intent.hasExtra(KEY_FILE))) {
                 Log_OC.e(TAG, "Not enough information provided in intent");
                 return Service.START_NOT_STICKY;
@@ -336,12 +343,6 @@ public class FileUploader extends Service
             if (error != null) {
                 return error;
             }
-        } else { // Retry uploads
-            if (!intent.hasExtra(KEY_ACCOUNT) || !intent.hasExtra(KEY_RETRY_UPLOAD)) {
-                Log_OC.e(TAG, "Not enough information provided in intent: no KEY_RETRY_UPLOAD_KEY");
-                return START_NOT_STICKY;
-            }
-            retryUploads(intent, user, requestedUploads);
         }
 
         if (requestedUploads.size() > 0) {
@@ -929,8 +930,9 @@ public class FileUploader extends Service
         int createdBy,
         boolean requiresWifi,
         boolean requiresCharging,
-        NameCollisionPolicy nameCollisionPolicy
-    ) {
+        NameCollisionPolicy nameCollisionPolicy,
+        BackgroundJobManager backgroundJobManager
+                                    ) {
         uploadNewFile(
             context,
             user,
@@ -942,8 +944,9 @@ public class FileUploader extends Service
             createdBy,
             requiresWifi,
             requiresCharging,
-            nameCollisionPolicy
-        );
+            nameCollisionPolicy,
+            backgroundJobManager
+                     );
     }
 
     /**
@@ -960,8 +963,9 @@ public class FileUploader extends Service
         int createdBy,
         boolean requiresWifi,
         boolean requiresCharging,
-        NameCollisionPolicy nameCollisionPolicy
-    ) {
+        NameCollisionPolicy nameCollisionPolicy,
+        BackgroundJobManager backgroundJobManager
+                                    ) {
         Intent intent = new Intent(context, FileUploader.class);
 
         intent.putExtra(FileUploader.KEY_ACCOUNT, user.toPlatformAccount());
@@ -976,7 +980,9 @@ public class FileUploader extends Service
         intent.putExtra(FileUploader.KEY_WHILE_CHARGING_ONLY, requiresCharging);
         intent.putExtra(FileUploader.KEY_NAME_COLLISION_POLICY, nameCollisionPolicy);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            backgroundJobManager.startFilesUploadJob(intent);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent);
         } else {
             context.startService(intent);
@@ -991,9 +997,16 @@ public class FileUploader extends Service
         User user,
         OCFile existingFile,
         Integer behaviour,
-        NameCollisionPolicy nameCollisionPolicy
-    ) {
-        uploadUpdateFile(context, user, new OCFile[]{existingFile}, behaviour, nameCollisionPolicy, true);
+        NameCollisionPolicy nameCollisionPolicy,
+        BackgroundJobManager backgroundJobManager
+                                       ) {
+        uploadUpdateFile(context,
+                         user,
+                         new OCFile[]{existingFile},
+                         behaviour,
+                         nameCollisionPolicy,
+                         true,
+                         backgroundJobManager);
     }
 
     /**
@@ -1005,9 +1018,16 @@ public class FileUploader extends Service
         OCFile existingFile,
         Integer behaviour,
         NameCollisionPolicy nameCollisionPolicy,
-        boolean disableRetries
+        boolean disableRetries,
+        BackgroundJobManager backgroundJobManager
                                        ) {
-        uploadUpdateFile(context, user, new OCFile[]{existingFile}, behaviour, nameCollisionPolicy, disableRetries);
+        uploadUpdateFile(context,
+                         user,
+                         new OCFile[]{existingFile},
+                         behaviour,
+                         nameCollisionPolicy,
+                         disableRetries,
+                         backgroundJobManager);
     }
 
     /**
@@ -1019,7 +1039,8 @@ public class FileUploader extends Service
         OCFile[] existingFiles,
         Integer behaviour,
         NameCollisionPolicy nameCollisionPolicy,
-        boolean disableRetries
+        boolean disableRetries,
+        BackgroundJobManager backgroundJobManager
                                        ) {
         Intent intent = new Intent(context, FileUploader.class);
 
@@ -1030,7 +1051,9 @@ public class FileUploader extends Service
         intent.putExtra(FileUploader.KEY_NAME_COLLISION_POLICY, nameCollisionPolicy);
         intent.putExtra(FileUploader.KEY_DISABLE_RETRIES, disableRetries);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            backgroundJobManager.startFilesUploadJob(intent);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent);
         } else {
             context.startService(intent);
@@ -1040,14 +1063,19 @@ public class FileUploader extends Service
     /**
      * Retry a failed {@link OCUpload} identified by {@link OCUpload#getRemotePath()}
      */
-    public static void retryUpload(@NonNull Context context, @NonNull User user, @NonNull OCUpload upload) {
+    public static void retryUpload(@NonNull Context context,
+                                   @NonNull User user,
+                                   @NonNull OCUpload upload,
+                                   BackgroundJobManager backgroundJobManager) {
         Intent i = new Intent(context, FileUploader.class);
         i.putExtra(FileUploader.KEY_RETRY, true);
         i.putExtra(FileUploader.KEY_USER, user);
         i.putExtra(FileUploader.KEY_ACCOUNT, user.toPlatformAccount());
         i.putExtra(FileUploader.KEY_RETRY_UPLOAD, upload);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            backgroundJobManager.startFilesUploadJob(i);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(i);
         } else {
             context.startService(i);
@@ -1062,8 +1090,9 @@ public class FileUploader extends Service
         @NonNull final UploadsStorageManager uploadsStorageManager,
         @NonNull final ConnectivityService connectivityService,
         @NonNull final UserAccountManager accountManager,
-        @NonNull final PowerManagementService powerManagementService
-    ) {
+        @NonNull final PowerManagementService powerManagementService,
+        @NonNull final BackgroundJobManager backgroundJobManager
+                                         ) {
         OCUpload[] failedUploads = uploadsStorageManager.getFailedUploads();
         if(failedUploads == null || failedUploads.length == 0) {
             return; //nothing to do
@@ -1092,7 +1121,7 @@ public class FileUploader extends Service
             } else if (!isPowerSaving && gotNetwork &&
                 canUploadBeRetried(failedUpload, gotWifi, charging) && !connectivityService.isInternetWalled()) {
                 // 2B. for existing local files, try restarting it if possible
-                retryUpload(context, uploadUser.get(), failedUpload);
+                retryUpload(context, uploadUser.get(), failedUpload, backgroundJobManager);
             }
         }
     }

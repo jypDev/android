@@ -120,22 +120,24 @@ public class ConflictsResolveActivity extends FileActivity implements OnConflict
                     break;
                 case KEEP_LOCAL: // Upload
                     FileUploader.uploadUpdateFile(
-                            getBaseContext(),
-                            user,
-                            file,
-                            localBehaviour,
-                            NameCollisionPolicy.OVERWRITE
+                        getBaseContext(),
+                        user,
+                        file,
+                        localBehaviour,
+                        NameCollisionPolicy.OVERWRITE,
+                        backgroundJobManager
                                                  );
 
                     uploadsStorageManager.removeUpload(upload);
                     break;
                 case KEEP_BOTH: // Upload
                     FileUploader.uploadUpdateFile(
-                            getBaseContext(),
-                            user,
-                            file,
-                            localBehaviour,
-                            NameCollisionPolicy.RENAME
+                        getBaseContext(),
+                        user,
+                        file,
+                        localBehaviour,
+                        NameCollisionPolicy.RENAME,
+                        backgroundJobManager
                                                  );
 
                     uploadsStorageManager.removeUpload(upload);

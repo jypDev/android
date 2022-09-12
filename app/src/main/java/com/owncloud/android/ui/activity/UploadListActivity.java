@@ -193,8 +193,9 @@ public class UploadListActivity extends FileActivity {
             uploadsStorageManager,
             connectivityService,
             userAccountManager,
-            powerManagementService
-        )).start();
+            powerManagementService,
+            backgroundJobManager
+                                                        )).start();
 
         // update UI
         uploadListAdapter.loadUploadItemsFromDb();
@@ -272,7 +273,8 @@ public class UploadListActivity extends FileActivity {
             FilesSyncHelper.restartJobsIfNeeded(uploadsStorageManager,
                                                 userAccountManager,
                                                 connectivityService,
-                                                powerManagementService);
+                                                powerManagementService,
+                                                backgroundJobManager);
         }
     }
 
@@ -295,7 +297,8 @@ public class UploadListActivity extends FileActivity {
                 FilesSyncHelper.restartJobsIfNeeded(uploadsStorageManager,
                                                     userAccountManager,
                                                     connectivityService,
-                                                    powerManagementService);
+                                                    powerManagementService,
+                                                    backgroundJobManager);
             }
 
         } else {

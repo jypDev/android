@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.text.TextUtils;
 
 import com.nextcloud.client.account.User;
+import com.nextcloud.client.jobs.BackgroundJobManager;
 import com.owncloud.android.datamodel.FileDataStorageManager;
 import com.owncloud.android.datamodel.OCFile;
 import com.owncloud.android.files.services.FileDownloader;
@@ -54,6 +55,7 @@ public class SynchronizeFileOperation extends SyncOperation {
     private boolean mSyncFileContents;
     private Context mContext;
     private boolean mTransferWasRequested;
+    private BackgroundJobManager backgroundJobManager;
 
     /**
      * When 'false', uploads to the server are not done; only downloads or conflict detection.
@@ -82,7 +84,8 @@ public class SynchronizeFileOperation extends SyncOperation {
         User user,
         boolean syncFileContents,
         Context context,
-        FileDataStorageManager storageManager) {
+        FileDataStorageManager storageManager,
+        BackgroundJobManager backgroundJobManager) {
         super(storageManager);
 
         mRemotePath = remotePath;
@@ -92,6 +95,7 @@ public class SynchronizeFileOperation extends SyncOperation {
         mSyncFileContents = syncFileContents;
         mContext = context;
         mAllowUploads = true;
+        this.backgroundJobManager = backgroundJobManager;
     }
 
 
@@ -120,7 +124,8 @@ public class SynchronizeFileOperation extends SyncOperation {
         User user,
         boolean syncFileContents,
         Context context,
-        FileDataStorageManager storageManager) {
+        FileDataStorageManager storageManager,
+        BackgroundJobManager backgroundJobManager) {
         super(storageManager);
 
         mLocalFile = localFile;
@@ -140,6 +145,7 @@ public class SynchronizeFileOperation extends SyncOperation {
         mSyncFileContents = syncFileContents;
         mContext = context;
         mAllowUploads = true;
+        this.backgroundJobManager = backgroundJobManager;
     }
 
 
@@ -173,9 +179,10 @@ public class SynchronizeFileOperation extends SyncOperation {
         boolean syncFileContents,
         boolean allowUploads,
         Context context,
-        FileDataStorageManager storageManager) {
+        FileDataStorageManager storageManager,
+        BackgroundJobManager backgroundJobManager) {
 
-        this(localFile, serverFile, user, syncFileContents, context, storageManager);
+        this(localFile, serverFile, user, syncFileContents, context, storageManager, backgroundJobManager);
         mAllowUploads = allowUploads;
     }
 
@@ -299,12 +306,13 @@ public class SynchronizeFileOperation extends SyncOperation {
      */
     private void requestForUpload(OCFile file) {
         FileUploader.uploadUpdateFile(
-                mContext,
-                mUser,
-                file,
-                FileUploader.LOCAL_BEHAVIOUR_MOVE,
-                NameCollisionPolicy.OVERWRITE
-        );
+            mContext,
+            mUser,
+            file,
+            FileUploader.LOCAL_BEHAVIOUR_MOVE,
+            NameCollisionPolicy.OVERWRITE,
+            backgroundJobManager
+                                     );
 
         mTransferWasRequested = true;
     }

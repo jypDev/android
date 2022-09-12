@@ -67,7 +67,8 @@ class FilesSyncWork(
     private val uploadsStorageManager: UploadsStorageManager,
     private val connectivityService: ConnectivityService,
     private val powerManagementService: PowerManagementService,
-    private val clock: Clock
+    private val clock: Clock,
+    private val backgroundJobManager: BackgroundJobManager
 ) : Worker(context, params) {
 
     companion object {
@@ -93,7 +94,8 @@ class FilesSyncWork(
             uploadsStorageManager,
             userAccountManager,
             connectivityService,
-            powerManagementService
+            powerManagementService,
+            backgroundJobManager
         )
         FilesSyncHelper.insertAllDBEntries(preferences, clock, skipCustom)
         // Create all the providers we'll needq
@@ -111,7 +113,8 @@ class FilesSyncWork(
                     filesystemDataProvider,
                     currentLocale,
                     dateFormat,
-                    syncedFolder
+                    syncedFolder,
+                    backgroundJobManager
                 )
             }
         }
@@ -127,7 +130,8 @@ class FilesSyncWork(
         filesystemDataProvider: FilesystemDataProvider,
         currentLocale: Locale,
         sFormatter: SimpleDateFormat,
-        syncedFolder: SyncedFolder
+        syncedFolder: SyncedFolder,
+        backgroundJobManager: BackgroundJobManager
     ) {
         var remotePath: String?
         var subfolderByDate: Boolean
@@ -189,7 +193,8 @@ class FilesSyncWork(
                 UploadFileOperation.CREATED_AS_INSTANT_PICTURE,
                 needsWifi,
                 needsCharging,
-                syncedFolder.nameCollisionPolicy
+                syncedFolder.nameCollisionPolicy,
+                backgroundJobManager
             )
             filesystemDataProvider.updateFilesystemFileAsSentForUpload(
                 path,

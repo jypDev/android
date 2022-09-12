@@ -24,7 +24,6 @@
 
 package com.owncloud.android.ui.adapter;
 
-import android.accounts.Account;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -147,8 +146,9 @@ public class UploadListAdapter extends SectionedRecyclerViewAdapter<SectionedVie
                         uploadsStorageManager,
                         connectivityService,
                         accountManager,
-                        powerManagementService
-                    )).start();
+                        powerManagementService,
+                        parentActivity.getBackgroundJobManager()
+                                                                    )).start();
                     break;
 
                 default:
@@ -382,7 +382,10 @@ public class UploadListAdapter extends SectionedRecyclerViewAdapter<SectionedVie
                 File file = new File(item.getLocalPath());
                 Optional<User> user = accountManager.getUser(item.getAccountName());
                 if (file.exists() && user.isPresent()) {
-                    FileUploader.retryUpload(parentActivity, user.get(), item);
+                    FileUploader.retryUpload(parentActivity,
+                                             user.get(),
+                                             item,
+                                             parentActivity.getBackgroundJobManager());
                     loadUploadItemsFromDb();
                 } else {
                     DisplayUtils.showSnackMessage(

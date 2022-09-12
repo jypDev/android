@@ -19,6 +19,7 @@
  */
 package com.nextcloud.client.jobs
 
+import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
@@ -138,6 +139,7 @@ interface BackgroundJobManager {
 
     fun startNotificationJob(subject: String, signature: String)
     fun startAccountRemovalJob(accountName: String, remoteWipe: Boolean)
+    fun startFilesUploadJob(intent: Intent)
 
     fun scheduleTestJob()
     fun startImmediateTestJob()

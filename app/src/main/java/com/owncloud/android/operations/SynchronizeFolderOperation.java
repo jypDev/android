@@ -25,6 +25,7 @@ import android.content.Intent;
 import android.text.TextUtils;
 
 import com.nextcloud.client.account.User;
+import com.nextcloud.client.jobs.BackgroundJobManager;
 import com.owncloud.android.datamodel.DecryptedFolderMetadata;
 import com.owncloud.android.datamodel.FileDataStorageManager;
 import com.owncloud.android.datamodel.OCFile;
@@ -85,16 +86,20 @@ public class SynchronizeFolderOperation extends SyncOperation {
     /** Counter of failed operations in synchronization of kept-in-sync files */
     private int mFailsInFileSyncsFound;
 
-    /** 'True' means that the remote folder changed and should be fetched */
+    /**
+     * 'True' means that the remote folder changed and should be fetched
+     */
     private boolean mRemoteFolderChanged;
 
     private List<OCFile> mFilesForDirectDownload;
-        // to avoid extra PROPFINDs when there was no change in the folder
+    // to avoid extra PROPFINDs when there was no change in the folder
 
     private List<SyncOperation> mFilesToSyncContents;
-        // this will be used for every file when 'folder synchronization' replaces 'folder download'
+    // this will be used for every file when 'folder synchronization' replaces 'folder download'
 
     private final AtomicBoolean mCancellationRequested;
+
+    private final BackgroundJobManager backgroundJobManager;
 
     /**
      * Creates a new instance of {@link SynchronizeFolderOperation}.
@@ -108,7 +113,8 @@ public class SynchronizeFolderOperation extends SyncOperation {
                                       String remotePath,
                                       User user,
                                       long currentSyncTime,
-                                      FileDataStorageManager storageManager) {
+                                      FileDataStorageManager storageManager,
+                                      BackgroundJobManager backgroundJobManager) {
         super(storageManager);
 
         mRemotePath = remotePath;
@@ -119,6 +125,7 @@ public class SynchronizeFolderOperation extends SyncOperation {
         mFilesForDirectDownload = new Vector<>();
         mFilesToSyncContents = new Vector<>();
         mCancellationRequested = new AtomicBoolean(false);
+        this.backgroundJobManager = backgroundJobManager;
     }
 
 
@@ -393,7 +400,8 @@ public class SynchronizeFolderOperation extends SyncOperation {
                 user,
                 true,
                 mContext,
-                getStorageManager()
+                getStorageManager(),
+                backgroundJobManager
             );
             mFilesToSyncContents.add(operation);
         }
@@ -426,7 +434,8 @@ public class SynchronizeFolderOperation extends SyncOperation {
                         user,
                         true,
                         mContext,
-                        getStorageManager()
+                        getStorageManager(),
+                        backgroundJobManager
                     );
                     mFilesToSyncContents.add(operation);
 

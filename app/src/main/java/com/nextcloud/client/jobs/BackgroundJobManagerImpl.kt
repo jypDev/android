@@ -19,6 +19,7 @@
  */
 package com.nextcloud.client.jobs
 
+import android.content.Intent
 import android.os.Build
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
@@ -78,6 +79,7 @@ internal class BackgroundJobManagerImpl(
         const val JOB_IMMEDIATE_MEDIA_FOLDER_DETECTION = "immediate_media_folder_detection"
         const val JOB_NOTIFICATION = "notification"
         const val JOB_ACCOUNT_REMOVAL = "account_removal"
+        const val JOB_FILES_UPLOAD = "files_upload"
         const val JOB_IMMEDIATE_CALENDAR_BACKUP = "immediate_calendar_backup"
         const val JOB_IMMEDIATE_FILES_EXPORT = "immediate_files_export"
 
@@ -443,6 +445,13 @@ internal class BackgroundJobManagerImpl(
 
         val request = oneTimeRequestBuilder(AccountRemovalWork::class, JOB_ACCOUNT_REMOVAL)
             .setInputData(data)
+            .build()
+
+        workManager.enqueue(request)
+    }
+
+    override fun startFilesUploadJob(intent: Intent) {
+        val request = oneTimeRequestBuilder(FilesUploadWorker::class, JOB_FILES_UPLOAD)
             .build()
 
         workManager.enqueue(request)
