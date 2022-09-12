@@ -1052,7 +1052,7 @@ public class FileUploader extends Service
         intent.putExtra(FileUploader.KEY_DISABLE_RETRIES, disableRetries);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            backgroundJobManager.startFilesUploadJob(intent);
+            backgroundJobManager.startFilesUploadJob(intent); // TODO put this logic into FileUploadHelper
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent);
         } else {
