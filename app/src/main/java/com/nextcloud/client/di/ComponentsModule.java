@@ -431,7 +431,4 @@ abstract class ComponentsModule {
 
     @ContributesAndroidInjector
     abstract SyncFileNotEnoughSpaceDialogFragment syncFileNotEnoughSpaceDialogFragment();
-
-    @ContributesAndroidInjector
-    abstract FilesUploadHelper filesUploadHelper();
 }

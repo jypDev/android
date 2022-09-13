@@ -22,20 +22,23 @@
 
 package com.owncloud.android.utils
 
-import android.content.Context
-import androidx.work.WorkManager
-import com.nextcloud.client.core.ClockImpl
 import com.nextcloud.client.jobs.BackgroundJobManager
-import com.nextcloud.client.jobs.BackgroundJobManagerImpl
 import com.nextcloud.common.User
+import com.owncloud.android.MainApp
 import com.owncloud.android.datamodel.OCFile
 import com.owncloud.android.db.OCUpload
 import com.owncloud.android.files.services.NameCollisionPolicy
 import com.owncloud.android.lib.common.utils.Log_OC
+import javax.inject.Inject
 
-class FilesUploadHelper(val context: Context) {
-    val backgroundJobManager: BackgroundJobManager =
-        BackgroundJobManagerImpl(WorkManager.getInstance(context), ClockImpl())
+class FilesUploadHelper() {
+
+    @Inject
+    lateinit var backgroundJobManager: BackgroundJobManager
+
+    init {
+        MainApp.getAppComponent().inject(this)
+    }
 
     fun uploadNewFile(
         user: com.nextcloud.client.account.User,

@@ -982,7 +982,7 @@ public class FileUploader extends Service
         intent.putExtra(FileUploader.KEY_NAME_COLLISION_POLICY, nameCollisionPolicy);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            new FilesUploadHelper(context).uploadNewFile(user,
+            new FilesUploadHelper().uploadNewFile(user,
                                                          localPaths,
                                                          remotePaths,
                                                          mimeTypes,
