@@ -79,6 +79,7 @@ import com.owncloud.android.ui.activity.ConflictsResolveActivity;
 import com.owncloud.android.ui.activity.UploadListActivity;
 import com.owncloud.android.ui.notifications.NotificationUtils;
 import com.owncloud.android.utils.ErrorMessageAdapter;
+import com.owncloud.android.utils.FilesUploadHelper;
 import com.owncloud.android.utils.theme.ThemeColorUtils;
 
 import java.io.File;
@@ -981,7 +982,16 @@ public class FileUploader extends Service
         intent.putExtra(FileUploader.KEY_NAME_COLLISION_POLICY, nameCollisionPolicy);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            backgroundJobManager.startFilesUploadJob(intent);
+            new FilesUploadHelper().uploadNewFile(user,
+                                                  localPaths,
+                                                  remotePaths,
+                                                  mimeTypes,
+                                                  behaviour,
+                                                  createRemoteFolder,
+                                                  createdBy,
+                                                  requiresWifi,
+                                                  requiresCharging,
+                                                  nameCollisionPolicy);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent);
         } else {
@@ -1052,7 +1062,7 @@ public class FileUploader extends Service
         intent.putExtra(FileUploader.KEY_DISABLE_RETRIES, disableRetries);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            backgroundJobManager.startFilesUploadJob(intent); // TODO put this logic into FileUploadHelper
+            FilesUploadHelper.Companion.uploadUpdatedFile(user, existingFiles, behaviour, nameCollisionPolicy, disableRetries);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent);
         } else {
@@ -1074,7 +1084,7 @@ public class FileUploader extends Service
         i.putExtra(FileUploader.KEY_RETRY_UPLOAD, upload);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            backgroundJobManager.startFilesUploadJob(i);
+            FilesUploadHelper.Companion.retryUpload(user, upload);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(i);
         } else {
