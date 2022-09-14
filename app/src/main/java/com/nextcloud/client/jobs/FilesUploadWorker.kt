@@ -22,22 +22,33 @@
 
 package com.nextcloud.client.jobs
 
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import android.os.Build
+import androidx.core.app.NotificationCompat
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.nextcloud.client.account.User
 import com.nextcloud.client.account.UserAccountManager
 import com.nextcloud.client.device.PowerManagementService
 import com.nextcloud.client.network.ConnectivityService
+import com.owncloud.android.R
 import com.owncloud.android.datamodel.FileDataStorageManager
 import com.owncloud.android.datamodel.ThumbnailsCacheManager
 import com.owncloud.android.datamodel.UploadsStorageManager
 import com.owncloud.android.db.OCUpload
 import com.owncloud.android.lib.common.OwnCloudAccount
 import com.owncloud.android.lib.common.OwnCloudClientManagerFactory
+import com.owncloud.android.lib.common.network.OnDatatransferProgressListener
 import com.owncloud.android.lib.common.operations.RemoteOperationResult
 import com.owncloud.android.lib.common.utils.Log_OC
+import com.owncloud.android.lib.resources.files.FileUtils
 import com.owncloud.android.operations.UploadFileOperation
+import com.owncloud.android.ui.activity.UploadListActivity
+import com.owncloud.android.ui.notifications.NotificationUtils
+import com.owncloud.android.utils.theme.ThemeColorUtils
 import java.io.File
 
 class FilesUploadWorker(
@@ -45,9 +56,16 @@ class FilesUploadWorker(
     val connectivityService: ConnectivityService,
     val powerManagementService: PowerManagementService,
     val userAccountManager: UserAccountManager,
+    val themeColorUtils: ThemeColorUtils,
     val context: Context,
     params: WorkerParameters
-) : Worker(context, params) {
+) : Worker(context, params), OnDatatransferProgressListener {
+    var lastPercent = 0
+    val notificationBuilder: NotificationCompat.Builder =
+        NotificationUtils.newNotificationBuilder(context, themeColorUtils)
+    val notificationManager: NotificationManager =
+        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
     override fun doWork(): Result {
         // get all pending uploads
         for (upload in uploadsStorageManager.currentAndPendingUploadsForCurrentAccount) {
@@ -83,13 +101,18 @@ class FilesUploadWorker(
             upload.isWhileChargingOnly,
             true,
             FileDataStorageManager(user, context.contentResolver)
-        )
+        ).apply {
+            addDataTransferProgressListener(this@FilesUploadWorker)
+        }
     }
 
     private fun upload(uploadFileOperation: UploadFileOperation, user: User) {
         var uploadResult: RemoteOperationResult<Any?>? = null
 
         // TODO update notification
+        // start notification
+        createNotification(uploadFileOperation)
+
         // TODO notifyUploadStart()
         // TODO sendBroadcastUploadStarted(mCurrentUpload);
 
@@ -125,16 +148,82 @@ class FilesUploadWorker(
             // }
             uploadsStorageManager.updateDatabaseUploadResult(uploadResult, uploadFileOperation)
 
+            // cancel notification
+            notificationManager.cancel(FOREGROUND_SERVICE_ID)
+
             /// TODO notify result
             // notifyUploadResult(mCurrentUpload, uploadResult)
             // sendBroadcastUploadFinished(mCurrentUpload, uploadResult, removeResult.second)
         }
     }
 
-    fun uploadFile() {
+    /**
+     * adapted from [com.owncloud.android.files.services.FileUploader.notifyUploadStart]
+     */
+    private fun createNotification(uploadFileOperation: UploadFileOperation) {
+        notificationBuilder
+            .setOngoing(true)
+            .setSmallIcon(R.drawable.notification_icon)
+            .setTicker(context.getString(R.string.uploader_upload_in_progress_ticker))
+            .setProgress(100, 0, false)
+            .setContentText(
+                String.format(
+                    context.getString(R.string.uploader_upload_in_progress_content),
+                    0,
+                    uploadFileOperation.fileName
+                )
+            )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationBuilder.setChannelId(NotificationUtils.NOTIFICATION_CHANNEL_UPLOAD)
+        }
+
+        /// includes a pending intent in the notification showing the details
+        val intent = UploadListActivity.createIntent(
+            uploadFileOperation.file,
+            uploadFileOperation.user,
+            Intent.FLAG_ACTIVITY_CLEAR_TOP,
+            context
+        )
+        notificationBuilder.setContentIntent(
+            PendingIntent.getActivity(
+                context, System.currentTimeMillis().toInt(),
+                intent,
+                PendingIntent.FLAG_IMMUTABLE
+            )
+        )
+
+        if (!uploadFileOperation.isInstantPicture && !uploadFileOperation.isInstantVideo) {
+            notificationManager.notify(FOREGROUND_SERVICE_ID, notificationBuilder.build())
+        } // else wait until the upload really start (onTransferProgress is called), so that if it's discarded
+
+        // due to lack of Wifi, no notification is shown
+        // TODO generalize for automated uploads
     }
 
     companion object {
         val TAG: String = FilesUploadWorker::class.java.simpleName
+        const val FOREGROUND_SERVICE_ID: Int = 412
+    }
+
+    /**
+     * see [com.owncloud.android.files.services.FileUploader.onTransferProgress]
+     */
+    override fun onTransferProgress(
+        progressRate: Long,
+        totalTransferredSoFar: Long,
+        totalToTransfer: Long,
+        fileAbsoluteName: String
+    ) {
+        val percent = (100.0 * totalTransferredSoFar.toDouble() / totalToTransfer.toDouble()).toInt()
+        if (percent != lastPercent) {
+            notificationBuilder.setProgress(100, percent, false)
+            val fileName: String =
+                fileAbsoluteName.substring(fileAbsoluteName.lastIndexOf(FileUtils.PATH_SEPARATOR) + 1)
+            val text = String.format(context.getString(R.string.uploader_upload_in_progress_content), percent, fileName)
+            notificationBuilder.setContentText(text)
+            notificationManager.notify(FOREGROUND_SERVICE_ID, notificationBuilder.build())
+        }
+        lastPercent = percent
     }
 }

@@ -596,7 +596,7 @@ public class FileUploader extends Service
 
     /**
      * Core upload method: sends the file(s) to upload WARNING: legacy code, must be in sync with @{{@link
-     * FilesUploadWorker#uploadFile()}}
+     * FilesUploadWorker#upload(UploadFileOperation, User)}
      *
      * @param uploadKey Key to access the upload to perform, contained in mPendingUploads
      */

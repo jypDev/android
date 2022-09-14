@@ -250,6 +250,7 @@ class BackgroundJobFactory @Inject constructor(
             connectivityService,
             powerManagementService,
             accountManager,
+            themeColorUtils,
             context,
             params
         )
