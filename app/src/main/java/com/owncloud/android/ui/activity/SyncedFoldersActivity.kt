@@ -40,6 +40,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.nextcloud.client.core.Clock
 import com.nextcloud.client.device.PowerManagementService
 import com.nextcloud.client.di.Injectable
+import com.nextcloud.client.jobs.BackgroundJobManager
 import com.nextcloud.client.jobs.MediaFoldersDetectionWork
 import com.nextcloud.client.jobs.NotificationWork
 import com.nextcloud.client.preferences.AppPreferences
@@ -152,6 +153,9 @@ class SyncedFoldersActivity :
 
     @Inject
     lateinit var clock: Clock
+
+    @Inject
+    lateinit var backgroundJobManager: BackgroundJobManager
 
     @Inject
     lateinit var themeButtonUtils: ThemeButtonUtils

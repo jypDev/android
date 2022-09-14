@@ -41,7 +41,6 @@ import android.util.Pair;
 
 import com.nextcloud.client.account.User;
 import com.nextcloud.client.account.UserAccountManager;
-import com.nextcloud.client.jobs.BackgroundJobManager;
 import com.nextcloud.java.util.Optional;
 import com.owncloud.android.MainApp;
 import com.owncloud.android.datamodel.FileDataStorageManager;
@@ -138,7 +137,6 @@ public class OperationsService extends Service {
         mUndispatchedFinishedOperations = new ConcurrentHashMap<>();
 
     @Inject UserAccountManager accountManager;
-    @Inject BackgroundJobManager backgroundJobManager;
 
     private static class Target {
         public Uri mServerUrl;
@@ -691,8 +689,7 @@ public class OperationsService extends Service {
                                                                  user,
                                                                  syncFileContents,
                                                                  getApplicationContext(),
-                                                                 fileDataStorageManager,
-                                                                 backgroundJobManager);
+                                                                 fileDataStorageManager);
                         break;
 
                     case ACTION_SYNC_FOLDER:
@@ -702,8 +699,7 @@ public class OperationsService extends Service {
                             remotePath,
                             user,
                             System.currentTimeMillis(),  // TODO remove this dependency from construction time
-                            fileDataStorageManager,
-                            backgroundJobManager
+                            fileDataStorageManager
                         );
                         break;
 

@@ -524,28 +524,24 @@ public class MainApp extends MultiDexApplication implements HasAndroidInjector {
             uploadsStorageManager,
             accountManager,
             connectivityService,
-            powerManagementService,
-            backgroundJobManager);
+            powerManagementService);
 
         backgroundJobManager.scheduleOfflineSync();
 
         ReceiversHelper.registerNetworkChangeReceiver(uploadsStorageManager,
                                                       accountManager,
                                                       connectivityService,
-                                                      powerManagementService,
-                                                      backgroundJobManager);
+                                                      powerManagementService);
 
         ReceiversHelper.registerPowerChangeReceiver(uploadsStorageManager,
                                                     accountManager,
                                                     connectivityService,
-                                                    powerManagementService,
-                                                    backgroundJobManager);
+                                                    powerManagementService);
 
         ReceiversHelper.registerPowerSaveReceiver(uploadsStorageManager,
                                                   accountManager,
                                                   connectivityService,
-                                                  powerManagementService,
-                                                  backgroundJobManager);
+                                                  powerManagementService);
     }
 
     public static void notificationChannels() {

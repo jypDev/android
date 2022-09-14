@@ -181,8 +181,7 @@ public final class FilesSyncHelper {
     public static void restartJobsIfNeeded(final UploadsStorageManager uploadsStorageManager,
                                            final UserAccountManager accountManager,
                                            final ConnectivityService connectivityService,
-                                           final PowerManagementService powerManagementService,
-                                           final BackgroundJobManager backgroundJobManager) {
+                                           final PowerManagementService powerManagementService) {
         final Context context = MainApp.getAppContext();
 
         boolean accountExists;
@@ -243,8 +242,7 @@ public final class FilesSyncHelper {
                     uploadsStorageManager,
                     connectivityService,
                     accountManager,
-                    powerManagementService,
-                    backgroundJobManager
+                    powerManagementService
                                                );
             }
         }).start();

@@ -124,8 +124,7 @@ public class ConflictsResolveActivity extends FileActivity implements OnConflict
                         user,
                         file,
                         localBehaviour,
-                        NameCollisionPolicy.OVERWRITE,
-                        backgroundJobManager
+                        NameCollisionPolicy.OVERWRITE
                                                  );
 
                     uploadsStorageManager.removeUpload(upload);
@@ -136,8 +135,7 @@ public class ConflictsResolveActivity extends FileActivity implements OnConflict
                         user,
                         file,
                         localBehaviour,
-                        NameCollisionPolicy.RENAME,
-                        backgroundJobManager
+                        NameCollisionPolicy.RENAME
                                                  );
 
                     uploadsStorageManager.removeUpload(upload);

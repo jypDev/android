@@ -910,8 +910,7 @@ public class ReceiveExternalFilesActivity extends FileActivity
             UploadFileOperation.CREATED_BY_USER,
             false,
             false,
-            NameCollisionPolicy.ASK_USER,
-            backgroundJobManager
+            NameCollisionPolicy.ASK_USER
                                   );
         finish();
     }
@@ -925,8 +924,7 @@ public class ReceiveExternalFilesActivity extends FileActivity
             getUser().orElseThrow(RuntimeException::new),
             FileUploader.LOCAL_BEHAVIOUR_DELETE,
             true, // Show waiting dialog while file is being copied from private storage
-            this,  // Copy temp task listener
-            backgroundJobManager
+            this  // Copy temp task listener
         );
 
         UriUploader.UriUploaderResultCode resultCode = uploader.uploadUris();

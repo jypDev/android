@@ -25,7 +25,6 @@ import android.content.Intent;
 import android.text.TextUtils;
 
 import com.nextcloud.client.account.User;
-import com.nextcloud.client.jobs.BackgroundJobManager;
 import com.owncloud.android.datamodel.DecryptedFolderMetadata;
 import com.owncloud.android.datamodel.FileDataStorageManager;
 import com.owncloud.android.datamodel.OCFile;
@@ -99,8 +98,6 @@ public class SynchronizeFolderOperation extends SyncOperation {
 
     private final AtomicBoolean mCancellationRequested;
 
-    private final BackgroundJobManager backgroundJobManager;
-
     /**
      * Creates a new instance of {@link SynchronizeFolderOperation}.
      *
@@ -113,8 +110,7 @@ public class SynchronizeFolderOperation extends SyncOperation {
                                       String remotePath,
                                       User user,
                                       long currentSyncTime,
-                                      FileDataStorageManager storageManager,
-                                      BackgroundJobManager backgroundJobManager) {
+                                      FileDataStorageManager storageManager) {
         super(storageManager);
 
         mRemotePath = remotePath;
@@ -125,7 +121,6 @@ public class SynchronizeFolderOperation extends SyncOperation {
         mFilesForDirectDownload = new Vector<>();
         mFilesToSyncContents = new Vector<>();
         mCancellationRequested = new AtomicBoolean(false);
-        this.backgroundJobManager = backgroundJobManager;
     }
 
 
@@ -400,8 +395,7 @@ public class SynchronizeFolderOperation extends SyncOperation {
                 user,
                 true,
                 mContext,
-                getStorageManager(),
-                backgroundJobManager
+                getStorageManager()
             );
             mFilesToSyncContents.add(operation);
         }
@@ -434,8 +428,7 @@ public class SynchronizeFolderOperation extends SyncOperation {
                         user,
                         true,
                         mContext,
-                        getStorageManager(),
-                        backgroundJobManager
+                        getStorageManager()
                     );
                     mFilesToSyncContents.add(operation);
 

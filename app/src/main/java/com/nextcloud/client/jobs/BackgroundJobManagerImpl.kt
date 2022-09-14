@@ -19,7 +19,6 @@
  */
 package com.nextcloud.client.jobs
 
-import android.content.Intent
 import android.os.Build
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
@@ -450,7 +449,7 @@ internal class BackgroundJobManagerImpl(
         workManager.enqueue(request)
     }
 
-    override fun startFilesUploadJob(intent: Intent) {
+    override fun startFilesUploadJob() {
         val request = oneTimeRequestBuilder(FilesUploadWorker::class, JOB_FILES_UPLOAD)
             .build()
 

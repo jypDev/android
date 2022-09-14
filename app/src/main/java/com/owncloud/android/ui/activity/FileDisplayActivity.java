@@ -944,8 +944,7 @@ public class FileDisplayActivity extends FileActivity
                 UploadFileOperation.CREATED_BY_USER,
                 false,
                 false,
-                NameCollisionPolicy.ASK_USER,
-                backgroundJobManager
+                NameCollisionPolicy.ASK_USER
                                       );
 
         } else {
@@ -981,8 +980,7 @@ public class FileDisplayActivity extends FileActivity
             getUser().orElseThrow(RuntimeException::new),
             behaviour,
             false, // Not show waiting dialog while file is being copied from private storage
-            null,  // Not needed copy temp task listener,
-            backgroundJobManager
+            null  // Not needed copy temp task listener
         );
 
         uploader.uploadUris();

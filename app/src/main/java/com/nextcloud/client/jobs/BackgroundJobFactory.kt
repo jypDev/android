@@ -190,8 +190,7 @@ class BackgroundJobFactory @Inject constructor(
             uploadsStorageManager = uploadsStorageManager,
             connectivityService = connectivityService,
             powerManagementService = powerManagementService,
-            clock = clock,
-            backgroundJobManager = backgroundJobManager.get()
+            clock = clock
         )
     }
 
@@ -202,8 +201,7 @@ class BackgroundJobFactory @Inject constructor(
             contentResolver = contentResolver,
             userAccountManager = accountManager,
             connectivityService = connectivityService,
-            powerManagementService = powerManagementService,
-            backgroundJobManager = backgroundJobManager.get()
+            powerManagementService = powerManagementService
         )
     }
 
@@ -247,6 +245,13 @@ class BackgroundJobFactory @Inject constructor(
     }
 
     private fun createFilesUploadWorker(context: Context, params: WorkerParameters): FilesUploadWorker {
-        return FilesUploadWorker(context, params)
+        return FilesUploadWorker(
+            uploadsStorageManager,
+            connectivityService,
+            powerManagementService,
+            accountManager,
+            context,
+            params
+        )
     }
 }

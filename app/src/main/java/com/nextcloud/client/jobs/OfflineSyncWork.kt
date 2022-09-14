@@ -45,8 +45,7 @@ class OfflineSyncWork constructor(
     private val contentResolver: ContentResolver,
     private val userAccountManager: UserAccountManager,
     private val connectivityService: ConnectivityService,
-    private val powerManagementService: PowerManagementService,
-    private val backgroundJobManager: BackgroundJobManager
+    private val powerManagementService: PowerManagementService
 ) : Worker(context, params) {
 
     companion object {
@@ -89,8 +88,7 @@ class OfflineSyncWork constructor(
                     user,
                     true,
                     context,
-                    storageManager,
-                    backgroundJobManager
+                    storageManager
                 )
                 synchronizeFileOperation.execute(context)
             }

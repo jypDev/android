@@ -44,7 +44,6 @@ import android.widget.Toast;
 import com.nextcloud.client.account.User;
 import com.nextcloud.client.account.UserAccountManager;
 import com.nextcloud.client.files.downloader.DownloadTask;
-import com.nextcloud.client.jobs.BackgroundJobManager;
 import com.nextcloud.client.preferences.AppPreferences;
 import com.nextcloud.client.preferences.AppPreferencesImpl;
 import com.nextcloud.client.utils.HashUtil;
@@ -110,7 +109,6 @@ public class DocumentsStorageProvider extends DocumentsProvider {
     private static final long CACHE_EXPIRATION = TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES);
 
     @Inject UserAccountManager accountManager;
-    @Inject BackgroundJobManager backgroundJobManager;
 
     @VisibleForTesting
     static final String DOCUMENTID_SEPARATOR = "/";
@@ -267,8 +265,7 @@ public class DocumentsStorageProvider extends DocumentsProvider {
                             ocFile,
                             LOCAL_BEHAVIOUR_DELETE,
                             NameCollisionPolicy.OVERWRITE,
-                            false,
-                            backgroundJobManager);
+                            false);
                     } else { // error, no upload needed
                         Log_OC.e(TAG, "File was closed with an error: " + ocFile.getFileName(), error);
                     }

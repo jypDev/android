@@ -146,8 +146,7 @@ public class UploadListAdapter extends SectionedRecyclerViewAdapter<SectionedVie
                         uploadsStorageManager,
                         connectivityService,
                         accountManager,
-                        powerManagementService,
-                        parentActivity.getBackgroundJobManager()
+                        powerManagementService
                                                                     )).start();
                     break;
 
@@ -382,10 +381,7 @@ public class UploadListAdapter extends SectionedRecyclerViewAdapter<SectionedVie
                 File file = new File(item.getLocalPath());
                 Optional<User> user = accountManager.getUser(item.getAccountName());
                 if (file.exists() && user.isPresent()) {
-                    FileUploader.retryUpload(parentActivity,
-                                             user.get(),
-                                             item,
-                                             parentActivity.getBackgroundJobManager());
+                    FileUploader.retryUpload(parentActivity, user.get(), item);
                     loadUploadItemsFromDb();
                 } else {
                     DisplayUtils.showSnackMessage(

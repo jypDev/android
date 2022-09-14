@@ -22,25 +22,28 @@
 
 package com.owncloud.android.utils
 
+import com.nextcloud.client.account.User
 import com.nextcloud.client.jobs.BackgroundJobManager
-import com.nextcloud.common.User
 import com.owncloud.android.MainApp
 import com.owncloud.android.datamodel.OCFile
+import com.owncloud.android.datamodel.UploadsStorageManager
 import com.owncloud.android.db.OCUpload
 import com.owncloud.android.files.services.NameCollisionPolicy
 import com.owncloud.android.lib.common.utils.Log_OC
 import javax.inject.Inject
 
-class FilesUploadHelper() {
-
+class FilesUploadHelper {
     @Inject
     lateinit var backgroundJobManager: BackgroundJobManager
+
+    @Inject
+    lateinit var uploadsStorageManager: UploadsStorageManager
 
     init {
         MainApp.getAppComponent().inject(this)
     }
 
-    fun uploadNewFile(
+    fun uploadNewFiles(
         user: com.nextcloud.client.account.User,
         localPaths: Array<String>,
         remotePaths: Array<String>,
@@ -52,36 +55,52 @@ class FilesUploadHelper() {
         requiresCharging: Boolean,
         nameCollisionPolicy: NameCollisionPolicy
     ) {
-        Log_OC.d(this, "upload new file")
+        Log_OC.d(this, "upload new files")
+
+        // todo loop
+        OCUpload(localPaths[0], remotePaths[0], user.accountName).apply {
+            this.nameCollisionPolicy = nameCollisionPolicy
+            isUseWifiOnly = requiresWifi
+            isWhileChargingOnly = requiresCharging
+            uploadStatus = UploadsStorageManager.UploadStatus.UPLOAD_IN_PROGRESS
+            this.createdBy = createdBy
+            isCreateRemoteFolder = createRemoteFolder
+
+            uploadsStorageManager.storeUpload(this)
+
+            backgroundJobManager.startFilesUploadJob()
+        }
     }
 
-    companion object {
-        fun uploadUpdatedFile(
-            user: User,
-            existingFiles: Array<OCFile>,
-            behaviour: Int,
-            nameCollisionPolicy: NameCollisionPolicy,
-            disableRetries: Boolean
-        ) {
-            Log_OC.d(this, "upload updated file")
-        }
+    fun uploadUpdatedFile(
+        user: User,
+        existingFiles: Array<OCFile>,
+        behaviour: Int,
+        nameCollisionPolicy: NameCollisionPolicy,
+        disableRetries: Boolean
+    ) {
+        Log_OC.d(this, "upload updated file")
 
-        fun retryUpload(user: User, upload: OCUpload) {
+        for (file in existingFiles) {
+            OCUpload(file, user).apply {
+                fileSize = file.fileLength
+                this.nameCollisionPolicy = nameCollisionPolicy
+                isCreateRemoteFolder = true
+                this.localAction = behaviour
+                isUseWifiOnly = false
+                isWhileChargingOnly = false
+                uploadStatus = UploadsStorageManager.UploadStatus.UPLOAD_IN_PROGRESS
+            }
         }
+    }
 
-        fun uploadNewFile(
-            user: com.nextcloud.client.account.User,
-            localPaths: Array<String>,
-            remotePaths: Array<String>,
-            mimeTypes: Array<String>?,
-            behaviour: Int,
-            createRemoteFolder: Boolean,
-            createdBy: Int,
-            requiresWifi: Boolean,
-            requiresCharging: Boolean,
-            nameCollisionPolicy: NameCollisionPolicy
-        ) {
-            Log_OC.d(this, "upload new file")
-        }
+    // TODO add callback to subscribed listeners
+    fun retryUpload(upload: OCUpload) {
+        Log_OC.d(this, "retry upload")
+
+        upload.uploadStatus = UploadsStorageManager.UploadStatus.UPLOAD_IN_PROGRESS
+        uploadsStorageManager.updateUpload(upload)
+
+        backgroundJobManager.startFilesUploadJob()
     }
 }

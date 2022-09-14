@@ -30,7 +30,6 @@ import android.provider.DocumentsContract;
 import android.widget.Toast;
 
 import com.nextcloud.client.account.User;
-import com.nextcloud.client.jobs.BackgroundJobManager;
 import com.owncloud.android.R;
 import com.owncloud.android.files.services.FileUploader;
 import com.owncloud.android.files.services.NameCollisionPolicy;
@@ -65,8 +64,6 @@ public class CopyAndUploadContentUrisTask extends AsyncTask<Object, Void, Result
      */
     private final Context mAppContext;
 
-    private final BackgroundJobManager backgroundJobManager;
-
     /**
      * Helper method building a correct array of parameters to be passed to {@link #execute(Object[])} )}
      *
@@ -93,7 +90,7 @@ public class CopyAndUploadContentUrisTask extends AsyncTask<Object, Void, Result
      *
      * Any idea to prevent this while keeping the functionality will be welcome.
      *
-     * @return  Correct array of parameters to be passed to {@link #execute(Object[])}
+     * @return Correct array of parameters to be passed to {@link #execute(Object[])}
      */
     public static Object[] makeParamsToExecute(
         User user,
@@ -103,7 +100,7 @@ public class CopyAndUploadContentUrisTask extends AsyncTask<Object, Void, Result
         ContentResolver contentResolver
                                               ) {
 
-        return new Object[] {
+        return new Object[]{
             user,
             sourceUris,
             remotePaths,
@@ -114,12 +111,10 @@ public class CopyAndUploadContentUrisTask extends AsyncTask<Object, Void, Result
 
     public CopyAndUploadContentUrisTask(
         OnCopyTmpFilesTaskListener listener,
-        Context context,
-        BackgroundJobManager backgroundJobManager
+        Context context
                                        ) {
         mListener = new WeakReference<>(listener);
         mAppContext = context.getApplicationContext();
-        this.backgroundJobManager = backgroundJobManager;
     }
 
     /**
@@ -264,8 +259,7 @@ public class CopyAndUploadContentUrisTask extends AsyncTask<Object, Void, Result
             UploadFileOperation.CREATED_BY_USER,
             false,
             false,
-            NameCollisionPolicy.ASK_USER,
-            backgroundJobManager
+            NameCollisionPolicy.ASK_USER
                                   );
     }
 

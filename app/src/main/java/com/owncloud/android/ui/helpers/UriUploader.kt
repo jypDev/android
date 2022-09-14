@@ -23,7 +23,6 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.os.Parcelable
 import com.nextcloud.client.account.User
-import com.nextcloud.client.jobs.BackgroundJobManager
 import com.owncloud.android.R
 import com.owncloud.android.files.services.FileUploader
 import com.owncloud.android.files.services.NameCollisionPolicy
@@ -59,8 +58,7 @@ class UriUploader(
     private val user: User,
     private val mBehaviour: Int,
     private val mShowWaitingDialog: Boolean,
-    private val mCopyTmpTaskListener: OnCopyTmpFilesTaskListener?,
-    private val backgroundJobManager: BackgroundJobManager
+    private val mCopyTmpTaskListener: OnCopyTmpFilesTaskListener?
 ) {
 
     enum class UriUploaderResultCode {
@@ -84,7 +82,7 @@ class UriUploader(
                 val fileUris = uris
                     .filter { it.first.scheme == ContentResolver.SCHEME_FILE }
                 fileUris.forEach {
-                    requestUpload(it.first.path, it.second, backgroundJobManager)
+                    requestUpload(it.first.path, it.second)
                 }
 
                 val contentUrisNew = uris
@@ -126,7 +124,7 @@ class UriUploader(
      * @param localPath     Absolute path in the local file system to the file to upload.
      * @param remotePath    Absolute path in the current OC account to set to the uploaded file.
      */
-    private fun requestUpload(localPath: String?, remotePath: String, backgroundJobManager: BackgroundJobManager) {
+    private fun requestUpload(localPath: String?, remotePath: String) {
         FileUploader.uploadNewFile(
             mActivity,
             user,
@@ -138,8 +136,7 @@ class UriUploader(
             UploadFileOperation.CREATED_BY_USER,
             false,
             false,
-            NameCollisionPolicy.ASK_USER,
-            backgroundJobManager
+            NameCollisionPolicy.ASK_USER
         )
     }
 
@@ -152,7 +149,7 @@ class UriUploader(
         if (mShowWaitingDialog) {
             mActivity.showLoadingDialog(mActivity.resources.getString(R.string.wait_for_tmp_copy_from_private_storage))
         }
-        val copyTask = CopyAndUploadContentUrisTask(mCopyTmpTaskListener, mActivity, backgroundJobManager)
+        val copyTask = CopyAndUploadContentUrisTask(mCopyTmpTaskListener, mActivity)
         val fm = mActivity.supportFragmentManager
 
         // Init Fragment without UI to retain AsyncTask across configuration changes
