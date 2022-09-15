@@ -456,6 +456,10 @@ internal class BackgroundJobManagerImpl(
         workManager.enqueue(request)
     }
 
+    override fun getFileUploads(user: User): LiveData<MutableList<WorkInfo>> {
+        return workManager.getWorkInfosByTagLiveData(formatNameTag(JOB_FILES_UPLOAD, user))
+    }
+
     override fun scheduleTestJob() {
         val request = periodicRequestBuilder(TestJob::class, JOB_TEST)
             .setInitialDelay(DEFAULT_IMMEDIATE_JOB_DELAY_SEC, TimeUnit.SECONDS)

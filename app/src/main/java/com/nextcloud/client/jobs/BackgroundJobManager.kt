@@ -22,6 +22,7 @@ package com.nextcloud.client.jobs
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
+import androidx.work.WorkInfo
 import com.nextcloud.client.account.User
 import com.owncloud.android.datamodel.OCFile
 
@@ -139,6 +140,7 @@ interface BackgroundJobManager {
     fun startNotificationJob(subject: String, signature: String)
     fun startAccountRemovalJob(accountName: String, remoteWipe: Boolean)
     fun startFilesUploadJob(user: User)
+    fun getFileUploads(user: User): LiveData<MutableList<WorkInfo>>
 
     fun scheduleTestJob()
     fun startImmediateTestJob()
