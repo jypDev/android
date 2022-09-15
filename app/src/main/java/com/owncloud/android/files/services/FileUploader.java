@@ -1075,7 +1075,7 @@ public class FileUploader extends Service
         i.putExtra(FileUploader.KEY_RETRY_UPLOAD, upload);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            new FilesUploadHelper().retryUpload(upload);
+            new FilesUploadHelper().retryUpload(upload, user);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(i);
         } else {

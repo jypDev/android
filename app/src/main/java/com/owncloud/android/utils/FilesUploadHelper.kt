@@ -68,7 +68,7 @@ class FilesUploadHelper {
 
             uploadsStorageManager.storeUpload(this)
 
-            backgroundJobManager.startFilesUploadJob()
+            backgroundJobManager.startFilesUploadJob(user)
         }
     }
 
@@ -95,12 +95,12 @@ class FilesUploadHelper {
     }
 
     // TODO add callback to subscribed listeners
-    fun retryUpload(upload: OCUpload) {
+    fun retryUpload(upload: OCUpload, user: User) {
         Log_OC.d(this, "retry upload")
 
         upload.uploadStatus = UploadsStorageManager.UploadStatus.UPLOAD_IN_PROGRESS
         uploadsStorageManager.updateUpload(upload)
 
-        backgroundJobManager.startFilesUploadJob()
+        backgroundJobManager.startFilesUploadJob(user)
     }
 }

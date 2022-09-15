@@ -449,8 +449,8 @@ internal class BackgroundJobManagerImpl(
         workManager.enqueue(request)
     }
 
-    override fun startFilesUploadJob() {
-        val request = oneTimeRequestBuilder(FilesUploadWorker::class, JOB_FILES_UPLOAD)
+    override fun startFilesUploadJob(user: User) {
+        val request = oneTimeRequestBuilder(FilesUploadWorker::class, JOB_FILES_UPLOAD, user)
             .build()
 
         workManager.enqueue(request)
