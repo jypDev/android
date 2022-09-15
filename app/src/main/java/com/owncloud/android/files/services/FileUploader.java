@@ -924,7 +924,7 @@ public class FileUploader extends Service
         intent.putExtra(FileUploader.KEY_WHILE_CHARGING_ONLY, requiresCharging);
         intent.putExtra(FileUploader.KEY_NAME_COLLISION_POLICY, nameCollisionPolicy);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (useFilesUploadWorker(context)) {
             new FilesUploadHelper().uploadNewFiles(user,
                                                    localPaths,
                                                    remotePaths,
@@ -998,7 +998,7 @@ public class FileUploader extends Service
         intent.putExtra(FileUploader.KEY_NAME_COLLISION_POLICY, nameCollisionPolicy);
         intent.putExtra(FileUploader.KEY_DISABLE_RETRIES, disableRetries);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (useFilesUploadWorker(context)) {
             new FilesUploadHelper().uploadUpdatedFile(user, existingFiles, behaviour, nameCollisionPolicy, disableRetries);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent);
@@ -1019,7 +1019,7 @@ public class FileUploader extends Service
         i.putExtra(FileUploader.KEY_ACCOUNT, user.toPlatformAccount());
         i.putExtra(FileUploader.KEY_RETRY_UPLOAD, upload);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (useFilesUploadWorker(context)) {
             new FilesUploadHelper().retryUpload(upload, user);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(i);
@@ -1092,9 +1092,13 @@ public class FileUploader extends Service
     }
 
 
+    private static boolean useFilesUploadWorker(Context context) {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S || context.getResources().getBoolean(R.bool.is_beta);
+    }
+
     /**
      * Binder to let client components to perform operations on the queue of uploads.
-     *
+     * <p>
      * It provides by itself the available operations.
      */
     public class FileUploaderBinder extends Binder implements OnDatatransferProgressListener {
