@@ -26,6 +26,7 @@ import android.content.Context
 import android.content.res.Resources
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
@@ -251,6 +252,7 @@ class BackgroundJobFactory @Inject constructor(
             powerManagementService,
             accountManager,
             themeColorUtils,
+            LocalBroadcastManager.getInstance(context), // context is initialized too late for DI
             context,
             params
         )

@@ -56,7 +56,6 @@ import android.view.WindowManager;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.snackbar.Snackbar;
-import com.nextcloud.client.account.AnonymousUser;
 import com.nextcloud.client.account.User;
 import com.nextcloud.client.appinfo.AppInfo;
 import com.nextcloud.client.di.Injectable;
@@ -149,7 +148,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.work.WorkInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import static com.owncloud.android.datamodel.OCFile.PATH_SEPARATOR;
@@ -1141,18 +1139,6 @@ public class FileDisplayActivity extends FileActivity
         IntentFilter uploadIntentFilter = new IntentFilter(FileUploader.getUploadFinishMessage());
         mUploadFinishReceiver = new UploadFinishReceiver();
         localBroadcastManager.registerReceiver(mUploadFinishReceiver, uploadIntentFilter);
-
-        // check workManager for upload
-        backgroundJobManager
-            .getFileUploads(getUser().orElse(new AnonymousUser(MainApp.getAccountType(this))))
-            .observe(this, workInfos -> {
-                for (WorkInfo workInfo : workInfos) {
-                    if (workInfo.getState().isFinished()) {
-                        Log_OC.d("FDA", "work finished " + workInfo.getId());
-                    }
-                }
-                Log_OC.d("FDA", "");
-            });
 
         // Listen for download messages
         IntentFilter downloadIntentFilter = new IntentFilter(FileDownloader.getDownloadAddedMessage());

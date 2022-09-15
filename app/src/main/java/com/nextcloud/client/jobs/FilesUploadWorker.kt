@@ -28,12 +28,14 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.nextcloud.client.account.User
 import com.nextcloud.client.account.UserAccountManager
 import com.nextcloud.client.device.PowerManagementService
 import com.nextcloud.client.network.ConnectivityService
+import com.nextcloud.client.utils.FileUploaderDelegate
 import com.owncloud.android.R
 import com.owncloud.android.datamodel.FileDataStorageManager
 import com.owncloud.android.datamodel.ThumbnailsCacheManager
@@ -57,6 +59,7 @@ class FilesUploadWorker(
     val powerManagementService: PowerManagementService,
     val userAccountManager: UserAccountManager,
     val themeColorUtils: ThemeColorUtils,
+    val localBroadcastManager: LocalBroadcastManager,
     val context: Context,
     params: WorkerParameters
 ) : Worker(context, params), OnDatatransferProgressListener {
@@ -65,6 +68,7 @@ class FilesUploadWorker(
         NotificationUtils.newNotificationBuilder(context, themeColorUtils)
     val notificationManager: NotificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    val fileUploaderDelegate = FileUploaderDelegate()
 
     override fun doWork(): Result {
         // get all pending uploads
@@ -74,7 +78,15 @@ class FilesUploadWorker(
             if (user.isPresent) {
                 val uploadFileOperation = createUploadFileOperation(upload, user.get())
 
-                upload(uploadFileOperation, user.get())
+                val result = upload(uploadFileOperation, user.get())
+
+                fileUploaderDelegate.sendBroadcastUploadFinished(
+                    uploadFileOperation,
+                    result,
+                    uploadFileOperation.oldFile?.storagePath,
+                    context,
+                    localBroadcastManager
+                )
             } else {
                 // TODO remove upload
             }
@@ -106,8 +118,8 @@ class FilesUploadWorker(
         }
     }
 
-    private fun upload(uploadFileOperation: UploadFileOperation, user: User) {
-        var uploadResult: RemoteOperationResult<Any?>? = null
+    private fun upload(uploadFileOperation: UploadFileOperation, user: User): RemoteOperationResult<Any?> {
+        lateinit var uploadResult: RemoteOperationResult<Any?>
 
         // TODO update notification
         // start notification
@@ -155,6 +167,8 @@ class FilesUploadWorker(
             // notifyUploadResult(mCurrentUpload, uploadResult)
             // sendBroadcastUploadFinished(mCurrentUpload, uploadResult, removeResult.second)
         }
+
+        return uploadResult
     }
 
     /**

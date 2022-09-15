@@ -55,6 +55,7 @@ import com.nextcloud.client.device.PowerManagementService;
 import com.nextcloud.client.jobs.FilesUploadWorker;
 import com.nextcloud.client.network.Connectivity;
 import com.nextcloud.client.network.ConnectivityService;
+import com.nextcloud.client.utils.FileUploaderDelegate;
 import com.nextcloud.java.util.Optional;
 import com.owncloud.android.MainApp;
 import com.owncloud.android.R;
@@ -216,6 +217,7 @@ public class FileUploader extends Service
     private NotificationManager mNotificationManager;
     private NotificationCompat.Builder mNotificationBuilder;
     private int mLastPercent;
+    private FileUploaderDelegate fileUploaderDelegate;
 
 
     @Override
@@ -238,6 +240,7 @@ public class FileUploader extends Service
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper, this);
         mBinder = new FileUploaderBinder();
+        fileUploaderDelegate = new FileUploaderDelegate();
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this).setContentTitle(
             getApplicationContext().getResources().getString(R.string.app_name))
@@ -653,7 +656,11 @@ public class FileUploader extends Service
                 /// notify result
                 notifyUploadResult(mCurrentUpload, uploadResult);
 
-                sendBroadcastUploadFinished(mCurrentUpload, uploadResult, removeResult.second);
+                fileUploaderDelegate.sendBroadcastUploadFinished(mCurrentUpload,
+                                                                 uploadResult,
+                                                                 removeResult.second,
+                                                                 this,
+                                                                 localBroadcastManager);
             }
 
             // generate new Thumbnail
@@ -873,39 +880,6 @@ public class FileUploader extends Service
 
         start.setPackage(getPackageName());
         localBroadcastManager.sendBroadcast(start);
-    }
-
-    /**
-     * Sends a broadcast in order to the interested activities can update their view
-     *
-     * TODO - no more broadcasts, replace with a callback to subscribed listeners
-     *
-     * @param upload                 Finished upload operation
-     * @param uploadResult           Result of the upload operation
-     * @param unlinkedFromRemotePath Path in the uploads tree where the upload was unlinked from
-     */
-    private void sendBroadcastUploadFinished(
-        UploadFileOperation upload,
-        RemoteOperationResult uploadResult,
-        String unlinkedFromRemotePath
-    ) {
-        Intent end = new Intent(getUploadFinishMessage());
-        end.putExtra(EXTRA_REMOTE_PATH, upload.getRemotePath()); // real remote
-        // path, after
-        // possible
-        // automatic
-        // renaming
-        if (upload.wasRenamed()) {
-            end.putExtra(EXTRA_OLD_REMOTE_PATH, upload.getOldFile().getRemotePath());
-        }
-        end.putExtra(EXTRA_OLD_FILE_PATH, upload.getOriginalStoragePath());
-        end.putExtra(ACCOUNT_NAME, upload.getUser().getAccountName());
-        end.putExtra(EXTRA_UPLOAD_RESULT, uploadResult.isSuccess());
-        if (unlinkedFromRemotePath != null) {
-            end.putExtra(EXTRA_LINKED_TO_PATH, unlinkedFromRemotePath);
-        }
-        end.setPackage(getPackageName());
-        localBroadcastManager.sendBroadcast(end);
     }
 
     /**
