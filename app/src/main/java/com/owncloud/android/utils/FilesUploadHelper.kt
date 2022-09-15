@@ -44,7 +44,7 @@ class FilesUploadHelper {
     }
 
     fun uploadNewFiles(
-        user: com.nextcloud.client.account.User,
+        user: User,
         localPaths: Array<String>,
         remotePaths: Array<String>,
         mimeTypes: Array<String>?,
@@ -55,20 +55,18 @@ class FilesUploadHelper {
         requiresCharging: Boolean,
         nameCollisionPolicy: NameCollisionPolicy
     ) {
-        Log_OC.d(this, "upload new files")
+        for (i in localPaths.indices) {
+            OCUpload(localPaths[i], remotePaths[i], user.accountName).apply {
+                this.nameCollisionPolicy = nameCollisionPolicy
+                isUseWifiOnly = requiresWifi
+                isWhileChargingOnly = requiresCharging
+                uploadStatus = UploadsStorageManager.UploadStatus.UPLOAD_IN_PROGRESS
+                this.createdBy = createdBy
+                isCreateRemoteFolder = createRemoteFolder
 
-        // todo loop
-        OCUpload(localPaths[0], remotePaths[0], user.accountName).apply {
-            this.nameCollisionPolicy = nameCollisionPolicy
-            isUseWifiOnly = requiresWifi
-            isWhileChargingOnly = requiresCharging
-            uploadStatus = UploadsStorageManager.UploadStatus.UPLOAD_IN_PROGRESS
-            this.createdBy = createdBy
-            isCreateRemoteFolder = createRemoteFolder
-
-            uploadsStorageManager.storeUpload(this)
-
-            backgroundJobManager.startFilesUploadJob(user)
+                uploadsStorageManager.storeUpload(this)
+                backgroundJobManager.startFilesUploadJob(user)
+            }
         }
     }
 
@@ -90,11 +88,13 @@ class FilesUploadHelper {
                 isUseWifiOnly = false
                 isWhileChargingOnly = false
                 uploadStatus = UploadsStorageManager.UploadStatus.UPLOAD_IN_PROGRESS
+
+                uploadsStorageManager.storeUpload(this)
+                backgroundJobManager.startFilesUploadJob(user)
             }
         }
     }
 
-    // TODO add callback to subscribed listeners
     fun retryUpload(upload: OCUpload, user: User) {
         Log_OC.d(this, "retry upload")
 

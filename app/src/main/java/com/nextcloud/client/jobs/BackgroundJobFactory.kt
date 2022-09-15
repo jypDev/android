@@ -70,7 +70,8 @@ class BackgroundJobFactory @Inject constructor(
     private val deckApi: DeckApi,
     private val themeColorUtils: ThemeColorUtils,
     private val themeSnackbarUtils: ThemeSnackbarUtils,
-    private val themeButtonUtils: ThemeButtonUtils
+    private val themeButtonUtils: ThemeButtonUtils,
+    private val localBroadcastManager: Provider<LocalBroadcastManager>
 ) : WorkerFactory() {
 
     @SuppressLint("NewApi")
@@ -252,7 +253,7 @@ class BackgroundJobFactory @Inject constructor(
             powerManagementService,
             accountManager,
             themeColorUtils,
-            LocalBroadcastManager.getInstance(context), // context is initialized too late for DI
+            localBroadcastManager.get(),
             context,
             params
         )

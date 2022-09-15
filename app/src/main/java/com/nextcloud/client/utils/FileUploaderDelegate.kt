@@ -34,6 +34,38 @@ class FileUploaderDelegate {
      * Sends a broadcast in order to the interested activities can update their view
      *
      * TODO - no more broadcasts, replace with a callback to subscribed listeners once we drop FileUploader
+     */
+    fun sendBroadcastUploadsAdded(context: Context, localBroadcastManager: LocalBroadcastManager) {
+        val start = Intent(FileUploader.getUploadsAddedMessage())
+        // nothing else needed right now
+        start.setPackage(context.packageName)
+        localBroadcastManager.sendBroadcast(start)
+    }
+
+    /**
+     * Sends a broadcast in order to the interested activities can update their view
+     *
+     * TODO - no more broadcasts, replace with a callback to subscribed listeners once we drop FileUploader
+     *
+     * @param upload Finished upload operation
+     */
+    fun sendBroadcastUploadStarted(
+        upload: UploadFileOperation,
+        context: Context,
+        localBroadcastManager: LocalBroadcastManager
+    ) {
+        val start = Intent(FileUploader.getUploadStartMessage())
+        start.putExtra(FileUploader.EXTRA_REMOTE_PATH, upload.remotePath) // real remote
+        start.putExtra(FileUploader.EXTRA_OLD_FILE_PATH, upload.originalStoragePath)
+        start.putExtra(FileUploader.ACCOUNT_NAME, upload.user.accountName)
+        start.setPackage(context.packageName)
+        localBroadcastManager.sendBroadcast(start)
+    }
+
+    /**
+     * Sends a broadcast in order to the interested activities can update their view
+     *
+     * TODO - no more broadcasts, replace with a callback to subscribed listeners once we drop FileUploader
      *
      * @param upload                 Finished upload operation
      * @param uploadResult           Result of the upload operation

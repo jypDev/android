@@ -223,7 +223,7 @@ public class FileUploader extends Service
     @Override
     public void onRenameUpload() {
         mUploadsStorageManager.updateDatabaseUploadStart(mCurrentUpload);
-        sendBroadcastUploadStarted(mCurrentUpload);
+        fileUploaderDelegate.sendBroadcastUploadStarted(mCurrentUpload, this, localBroadcastManager);
     }
 
     /**
@@ -354,7 +354,7 @@ public class FileUploader extends Service
             msg.arg1 = startId;
             msg.obj = requestedUploads;
             mServiceHandler.sendMessage(msg);
-            sendBroadcastUploadsAdded();
+            fileUploaderDelegate.sendBroadcastUploadsAdded(this, localBroadcastManager);
         }
         return Service.START_NOT_STICKY;
     }
@@ -620,7 +620,7 @@ public class FileUploader extends Service
 
             notifyUploadStart(mCurrentUpload);
 
-            sendBroadcastUploadStarted(mCurrentUpload);
+            fileUploaderDelegate.sendBroadcastUploadStarted(mCurrentUpload, this, localBroadcastManager);
 
             RemoteOperationResult uploadResult = null;
 
@@ -851,35 +851,6 @@ public class FileUploader extends Service
                 mNotificationManager.notify((new SecureRandom()).nextInt(), mNotificationBuilder.build());
             }
         }
-    }
-
-    /**
-     * Sends a broadcast in order to the interested activities can update their view
-     *
-     * TODO - no more broadcasts, replace with a callback to subscribed listeners
-     */
-    private void sendBroadcastUploadsAdded() {
-        Intent start = new Intent(getUploadsAddedMessage());
-        // nothing else needed right now
-        start.setPackage(getPackageName());
-        localBroadcastManager.sendBroadcast(start);
-    }
-
-    /**
-     * Sends a broadcast in order to the interested activities can update their view
-     *
-     * TODO - no more broadcasts, replace with a callback to subscribed listeners
-     *
-     * @param upload Finished upload operation
-     */
-    private void sendBroadcastUploadStarted(UploadFileOperation upload) {
-        Intent start = new Intent(getUploadStartMessage());
-        start.putExtra(EXTRA_REMOTE_PATH, upload.getRemotePath()); // real remote
-        start.putExtra(EXTRA_OLD_FILE_PATH, upload.getOriginalStoragePath());
-        start.putExtra(ACCOUNT_NAME, upload.getUser().getAccountName());
-
-        start.setPackage(getPackageName());
-        localBroadcastManager.sendBroadcast(start);
     }
 
     /**
