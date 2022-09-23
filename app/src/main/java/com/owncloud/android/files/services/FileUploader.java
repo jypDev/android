@@ -94,6 +94,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import dagger.android.AndroidInjection;
@@ -190,6 +191,7 @@ public class FileUploader extends Service
     public static final int LOCAL_BEHAVIOUR_FORGET = 2;
     public static final int LOCAL_BEHAVIOUR_DELETE = 3;
 
+    private static boolean forceNewUploadWorker = false;
 
     private Notification mNotification;
     private Looper mServiceLooper;
@@ -1093,7 +1095,16 @@ public class FileUploader extends Service
 
 
     private static boolean useFilesUploadWorker(Context context) {
+        if (forceNewUploadWorker) {
+            return true;
+        }
+
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S || context.getResources().getBoolean(R.bool.is_beta);
+    }
+
+    @VisibleForTesting
+    public static void setForceNewUploadWorker(final Boolean value) {
+        forceNewUploadWorker = value;
     }
 
     /**

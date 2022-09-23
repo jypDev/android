@@ -42,7 +42,7 @@ import junit.framework.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-class FileUploaderIT : AbstractOnServerIT() {
+abstract class FileUploaderIT : AbstractOnServerIT() {
     var uploadsStorageManager: UploadsStorageManager? = null
 
     val connectivityServiceMock: ConnectivityService = object : ConnectivityService {
